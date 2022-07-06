@@ -1,0 +1,86 @@
+import { useContext, useEffect, useState } from "react";
+import { Context } from "../../context";
+import UserRoute from "../../components/routes/UserRoute";
+import axios from "axios";
+import { Avatar } from "antd";
+import Link from "next/link";
+import { SyncOutlined, PlayCircleOutlined } from "@ant-design/icons";
+
+const UserIndex = () => {
+  const {
+    state: { user },
+  } = useContext(Context);
+
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const loadCourses = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get("/api/user/user-courses");
+      setCourses(data);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
+  console.log(courses);
+
+  return (
+    <UserRoute>
+      {loading && (
+        <SyncOutlined
+          spin
+          className="d-flex justify-content-center dispaly-1 text-danger p-5"
+        ></SyncOutlined>
+      )}
+      <>
+        <div className="jumbotron bg-primary square text-center">
+          <h1 style={{ height: "150px" }} className="p-5  text-light">
+            <pre>User Dashboard</pre>
+          </h1>
+        </div>
+        {courses.map((course) => (
+          <div key={course._id} className="media pt-2 pb-1">
+            <Avatar
+              size={80}
+              shape="square"
+              src={course.image ? course.image.Location : "/course.png"}
+            ></Avatar>
+            <div className="media-body pl-2">
+              <div className="row">
+                <div className="col">
+                  <Link href={`user/course/${course._id}`} className="pointer">
+                    <a>
+                      <h5 className="mt-2 text-primary">{course.name}</h5>
+                    </a>
+                  </Link>
+                  <p style={{ marginTop: "-10px" }}> {course.lessons.length}</p>
+                  <p
+                    className="text-muted"
+                    style={{ marginTop: "-15px", fontSize: "12px" }}
+                  >
+                    By {course.instructor.name}
+                  </p>
+                </div>
+                <div className="col-md-3 mt-3 text-center">
+                  <Link href={`user/course/${course._id}`} className="pointer">
+                    <a>
+                      <PlayCircleOutlined className="h2 pointer text-primary" />
+                    </a>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </>
+    </UserRoute>
+  );
+};
+export default UserIndex;
